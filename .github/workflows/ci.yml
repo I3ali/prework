@@ -32,6 +32,12 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
+    - name: Wait for Redis to be ready
+      run: |
+        while ! nc -z redis 6379; do
+          sleep 1
+        done
+
     - name: Run tests
       run: |
-        pytest
+        pytest -v
