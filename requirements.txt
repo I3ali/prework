@@ -1,0 +1,5 @@
+Flask
+redis
+pytest
+pytest-flask
+requests

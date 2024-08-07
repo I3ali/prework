@@ -1,0 +1,14 @@
+version: '3'
+services:
+  web:
+    build: .
+    ports:
+      - "5001:5000" # Map container's port 5000 to host's port 5001
+    depends_on:
+      - redis
+    env_file:
+      - .env
+  redis:
+    image: "redis:alpine"
+    ports:
+      - "6379:6379"
