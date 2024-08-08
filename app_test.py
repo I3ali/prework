@@ -1,14 +1,17 @@
 import pytest
 from app import APP as custom_app, VERSION
 
+
 @pytest.fixture
 def app():
     return custom_app
+
 
 @pytest.mark.unittest
 def test_math_is_valud(client):
     """ Tests that it is possible to do math """
     assert (1 + 1) == 2
+
 
 @pytest.mark.unittest
 def test_redirect(client):
@@ -16,12 +19,14 @@ def test_redirect(client):
     res = client.get('/')
     assert res.status_code == 302
 
+
 @pytest.mark.unittest
 def test_version(client):
     """ Tests the version is correct"""
     res = client.get('/version')
     assert res.status_code == 200
     assert res.json["version"] == VERSION
+
 
 @pytest.mark.integration
 def test_health(client):
@@ -33,6 +38,7 @@ def test_health(client):
     res = client.get('/readyz')
     assert res.status_code == 200
     assert res.json["ping"]
+
 
 @pytest.mark.integration
 def test_integration(client):
@@ -67,4 +73,3 @@ def test_integration(client):
     res = client.get('/get')
     assert res.status_code == 200
     assert res.json["quote"] == "None"
-
