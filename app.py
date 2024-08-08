@@ -3,11 +3,15 @@
     Example app that integrates with redis and save/get homer simpson quotes
 """
 from os import environ
+from dotenv import load_dotenv
 import json
 import redis
 import requests
 import json
 from flask import Flask, redirect, jsonify
+
+# Load environment variables from .env file
+load_dotenv()
 
 VERSION = "1.1.1"
 REDIS_ENDPOINT = environ.get("REDIS_ENDPOINT", "localhost")
