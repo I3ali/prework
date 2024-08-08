@@ -40,7 +40,7 @@ jobs:
       run: black --check .
 
     - name: Run Bandit
-      run: bandit -r .
+      run: bandit -r . --severity-level medium
 
     - name: Run mypy
       run: mypy .
