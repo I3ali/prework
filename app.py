@@ -88,5 +88,6 @@ def ready():
 
 
 if __name__ == "__main__":
-    host = "0.0.0.0" if environ.get("FLASK_ENV") != "production" else "127.0.0.1"
-    APP.run(debug=environ.get("FLASK_ENV") != "production", host=host)
+    env = environ.get("FLASK_ENV")
+    host = "0.0.0.0" if env != "production" else "127.0.0.1"
+    APP.run(debug=env != "production", host=host)
