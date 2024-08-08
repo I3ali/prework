@@ -1,7 +1,7 @@
-
 """
     Example app that integrates with redis and save/get homer simpson quotes
 """
+
 from os import environ
 from dotenv import load_dotenv
 import json
@@ -29,17 +29,15 @@ def redisapp():
 def set_var():
     """Set the quote"""
     red = redis.StrictRedis(
-        host=REDIS_ENDPOINT,
-        port=REDIS_PORT,
-        db=0,
-        decode_responses=True
-        )
+        host=REDIS_ENDPOINT, port=REDIS_PORT, db=0, decode_responses=True
+    )
 
     request = requests.get(
-        'https://thesimpsonsquoteapi.glitch.me/quotes?character=homer simpson'
-        )
+        "https://thesimpsonsquoteapi.glitch.me/quotes?character=homer simpson",
+        timeout=5
+    )
     content = json.loads(request.text)
-    quote = content[0]['quote']
+    quote = content[0]["quote"]
     red.set("quote", quote)
     return jsonify({"quote": str(red.get("quote"))})
 
@@ -48,10 +46,8 @@ def set_var():
 def get_var():
     """Get the quote"""
     red = redis.StrictRedis(
-        host=REDIS_ENDPOINT,
-        port=REDIS_PORT,
-        db=0,
-        decode_responses=True)
+        host=REDIS_ENDPOINT, port=REDIS_PORT, db=0, decode_responses=True
+    )
     return jsonify({"quote": str(red.get("quote"))})
 
 
@@ -59,11 +55,8 @@ def get_var():
 def reset():
     """Reset the quote"""
     red = redis.StrictRedis(
-        host=REDIS_ENDPOINT,
-        port=REDIS_PORT,
-        db=0,
-        decode_responses=True
-        )
+        host=REDIS_ENDPOINT, port=REDIS_PORT, db=0, decode_responses=True
+    )
     red.delete("quote")
     return jsonify({"quote": str(red.get("quote"))})
 
@@ -79,11 +72,8 @@ def health():
     """Check the app health"""
     try:
         red = redis.StrictRedis(
-            host=REDIS_ENDPOINT,
-            port=REDIS_PORT,
-            db=0,
-            decode_responses=True
-            )
+            host=REDIS_ENDPOINT, port=REDIS_PORT, db=0, decode_responses=True
+        )
         red.ping()
     except redis.exceptions.ConnectionError:
         return jsonify({"ping": "FAIL"})
@@ -98,4 +88,4 @@ def ready():
 
 
 if __name__ == "__main__":
-    APP.run(debug=True, host="0.0.0.0")
+    APP.run(debug=environ.get("FLASK_ENV") != "production", host="0.0.0.0")
