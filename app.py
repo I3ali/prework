@@ -34,7 +34,7 @@ def set_var():
 
     request = requests.get(
         "https://thesimpsonsquoteapi.glitch.me/quotes?character=homer simpson",
-        timeout=5
+        timeout=5,
     )
     content = json.loads(request.text)
     quote = content[0]["quote"]
