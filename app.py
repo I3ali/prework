@@ -9,9 +9,8 @@ import requests
 import json
 from flask import Flask, redirect, jsonify
 
-# Use as we used in xtellio settings file, not storing "secrets" here
 VERSION = "1.1.1"
-REDIS_ENDPOINT = environ.get("REDIS_ENDPOINT", "localhost") #redis
+REDIS_ENDPOINT = environ.get("REDIS_ENDPOINT", "localhost")
 REDIS_PORT = int(environ.get("REDIS_PORT", "6379"))
 
 APP = Flask(__name__)

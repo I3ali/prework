@@ -1,1 +1,8 @@
-.env
+*.env
+.DS_Store
+.python-version
+__pycache__/
+.venv/
+
+*.pyc
+vault/

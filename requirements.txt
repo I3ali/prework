@@ -3,3 +3,4 @@ redis
 pytest
 pytest-flask
 requests
+python-dotenv
