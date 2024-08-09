@@ -38,10 +38,18 @@ jobs:
       id: version
       run: |
         VERSION=$(grep -Po '(?<=VERSION = ")[^"]*' app.py)
-        if [ "${{ github.ref }}" == "refs/heads/master" ]; then
-          NEW_VERSION=$(python -c "major, minor, patch = map(int, '$VERSION'.split('.')); patch += 1; print(f'{major}.{minor}.{patch}')")
+        if [[ $VERSION == *"-dev" ]]; then
+          VERSION_NUM=${VERSION%-dev}
+          if [ "${{ github.ref }}" == "refs/heads/master" ]; then
+            # Strip '-dev' suffix for the master branch
+            NEW_VERSION=$(python -c "major, minor, patch = map(int, '$VERSION_NUM'.split('.')); patch += 1; print(f'{major}.{minor}.{patch}')")
+          else
+            # Increment and keep '-dev' for the dev branch
+            NEW_VERSION=$(python -c "major, minor, patch = map(int, '$VERSION_NUM'.split('.')); patch += 1; print(f'{major}.{minor}.{patch}-dev')")
+          fi
         else
-          NEW_VERSION=$(python -c "major, minor, patch = map(int, '$VERSION'.split('.')); patch += 1; print(f'{major}.{minor}.{patch}-dev')")
+          # Regular version increment for non-dev versions
+          NEW_VERSION=$(python -c "major, minor, patch = map(int, '$VERSION'.split('.')); patch += 1; print(f'{major}.{minor}.{patch}')")
         fi
         sed -i "s/VERSION = .*/VERSION = \"$NEW_VERSION\"/" app.py
         echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_ENV
