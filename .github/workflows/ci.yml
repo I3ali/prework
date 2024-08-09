@@ -31,6 +31,9 @@ jobs:
         pip install -r requirements.txt
         pip install flake8 black bandit mypy types-requests
 
+    - name: Run tests before version bump
+      run: pytest -v
+
     - name: Calculate and update version
       id: version
       run: |
@@ -44,6 +47,7 @@ jobs:
         echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_ENV
 
     - name: Commit version change
+      if: success()
       run: |
         git config --global user.email "action@github.com"
         git config --global user.name "GitHub Action"
@@ -52,9 +56,6 @@ jobs:
         git commit -m "Bump version to $NEW_VERSION"
         git tag -a v$NEW_VERSION -m "Release $NEW_VERSION"
         git push origin HEAD --tags
-
-    - name: Run tests
-      run: pytest -v
 
     - name: Run Flake8
       run: flake8 .
