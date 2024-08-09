@@ -3,7 +3,8 @@ name: CI/CD Pipeline
 on:
   push:
     branches:
-      - '**'  # Run on all branches
+      - master
+      - dev
 
 jobs:
   test:
@@ -30,6 +31,26 @@ jobs:
         pip install -r requirements.txt
         pip install flake8 black bandit mypy types-requests
 
+    - name: Calculate and update version
+      id: version
+      run: |
+        VERSION=$(grep -Po '(?<=VERSION = ")[^"]*' app.py)
+        if [ "${{ github.ref }}" == "refs/heads/master" ]; then
+          NEW_VERSION=$(python -c "major, minor, patch = map(int, '$VERSION'.split('.')); patch += 1; print(f'{major}.{minor}.{patch}')")
+        else
+          NEW_VERSION=$(python -c "major, minor, patch = map(int, '$VERSION'.split('.')); patch += 1; print(f'{major}.{minor}.{patch}-dev')")
+        fi
+        sed -i "s/VERSION = .*/VERSION = \"$NEW_VERSION\"/" app.py
+        echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_ENV
+
+    - name: Commit version change
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git commit -am "Bump version to $NEW_VERSION"
+        git tag -a v$NEW_VERSION -m "Release $NEW_VERSION"
+        git push origin HEAD --tags
+
     - name: Run tests
       run: pytest -v
 
@@ -43,4 +64,4 @@ jobs:
       run: bandit -r . --severity-level medium
 
     - name: Run mypy
-      run: mypy .
+      run: mypy app.py app_test.py
