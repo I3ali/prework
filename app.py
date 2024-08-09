@@ -12,7 +12,7 @@ from flask import Flask, redirect, jsonify
 # Load environment variables from .env file
 load_dotenv()
 
-VERSION = "1.1.3-dev"
+VERSION = "1.1.4"
 REDIS_ENDPOINT = environ.get("REDIS_ENDPOINT", "localhost")
 REDIS_PORT = int(environ.get("REDIS_PORT", "6379"))
 
