@@ -110,14 +110,11 @@ def mongo_test() -> dict:
     test_doc = {"name": "Homer Simpson", "quote": "D'oh!"}
     result = test_collection.insert_one(test_doc)
 
-    retrieved_doc = test_collection.find_one(
-        {"_id": result.inserted_id},
-        {"_id": 0}
-    )
+    doc = test_collection.find_one({"_id": result.inserted_id}, {"_id": 0})
 
     # clean up
     test_collection.delete_one({"_id": result.inserted_id})
-    return retrieved_doc
+    return doc
 
 
 if __name__ == "__main__":
