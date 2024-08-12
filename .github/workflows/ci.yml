@@ -42,7 +42,7 @@ jobs:
           VERSION_NUM=${VERSION%-dev}
           if [ "${{ github.ref }}" == "refs/heads/master" ]; then
             # Strip '-dev' suffix for the master branch
-            NEW_VERSION=$(python -c "major, minor, patch = map(int, '$VERSION_NUM'.split('.')); patch += 1; print(f'{major}.{minor}.{patch}')")
+            NEW_VERSION=$(python -c "major, minor, patch = map(int, '$VERSION_NUM'.split('.')); minor += 1; print(f'{major}.{minor}.{patch}')")
           else
             # Increment and keep '-dev' for the dev branch
             NEW_VERSION=$(python -c "major, minor, patch = map(int, '$VERSION_NUM'.split('.')); patch += 1; print(f'{major}.{minor}.{patch}-dev')")

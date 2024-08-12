@@ -1,5 +1,6 @@
 """
-    Example app that integrates with Redis, MongoDB, and saves/gets Homer Simpson quotes.
+    Example app that integrates with Redis, MongoDB,
+    and saves/gets Homer Simpson quotes.
 """
 
 from os import environ
@@ -13,7 +14,7 @@ from pymongo import MongoClient
 # Load environment variables from .env file
 load_dotenv()
 
-VERSION = "1.1.7"
+VERSION = "1.1.7-dev"
 REDIS_ENDPOINT = environ.get("REDIS_ENDPOINT", "localhost")
 REDIS_PORT = int(environ.get("REDIS_PORT", "6379"))
 MONGO_URI = environ.get("MONGO_URI")
@@ -36,10 +37,10 @@ def get_mongo_client():
         client = MongoClient(
             MONGO_URI,
             uuidRepresentation="standard",
-            tlsCertificateKeyFile=MONGO_CERT_PATH
+            tlsCertificateKeyFile=MONGO_CERT_PATH,
         )
-        db = client['Springfield']
-        test_collection = db['Simpson']
+        db = client["Springfield"]
+        test_collection = db["Simpson"]
     return test_collection
 
 
@@ -103,17 +104,17 @@ def ready():
 @APP.route("/mongo-test")
 def mongo_test() -> dict:
     """Insert a document into MongoDB, retrieve it and clean up"""
-    
+
     test_collection = get_mongo_client()
     # Insert a test document
     test_doc = {"name": "Homer Simpson", "quote": "D'oh!"}
     result = test_collection.insert_one(test_doc)
-    
+
     retrieved_doc = test_collection.find_one({"_id": result.inserted_id}, {"_id": 0})
 
-    #clean up
+    # clean up
     test_collection.delete_one({"_id": result.inserted_id})
-    return jsonify(retrieved_doc)
+    return retrieved_doc
 
 
 if __name__ == "__main__":
