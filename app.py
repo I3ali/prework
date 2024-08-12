@@ -17,7 +17,7 @@ VERSION = "1.1.6"
 REDIS_ENDPOINT = environ.get("REDIS_ENDPOINT", "localhost")
 REDIS_PORT = int(environ.get("REDIS_PORT", "6379"))
 MONGO_URI = environ.get("MONGO_URI")
-MONGO_CERT_PATH = environ.get("MONGO_CERT_PATH")
+MONGO_CERT_PATH = environ.get("MONGO_CERT_PATH", "X509-cert-8417019844152440938.pem")
 
 # Connect to MongoDB
 client = MongoClient(
@@ -30,6 +30,9 @@ test_collection = db['Simpson']
 
 APP = Flask(__name__)
 
+red = redis.StrictRedis(
+    host=REDIS_ENDPOINT, port=REDIS_PORT, db=0, decode_responses=True
+)
 
 @APP.route("/")
 def redisapp():
@@ -40,10 +43,6 @@ def redisapp():
 @APP.route("/set")
 def set_var():
     """Set the quote"""
-    red = redis.StrictRedis(
-        host=REDIS_ENDPOINT, port=REDIS_PORT, db=0, decode_responses=True
-    )
-
     request = requests.get(
         "https://thesimpsonsquoteapi.glitch.me/quotes?character=homer simpson",
         timeout=5,
@@ -51,25 +50,20 @@ def set_var():
     content = json.loads(request.text)
     quote = content[0]["quote"]
     red.set("quote", quote)
-    test_collection.insert_one({"quote": quote})
+    # MongoDB to store each new quote
+    # test_collection.insert_one({"quote": quote})
     return jsonify({"quote": str(red.get("quote"))})
 
 
 @APP.route("/get")
 def get_var():
     """Get the quote"""
-    red = redis.StrictRedis(
-        host=REDIS_ENDPOINT, port=REDIS_PORT, db=0, decode_responses=True
-    )
     return jsonify({"quote": str(red.get("quote"))})
 
 
 @APP.route("/reset")
 def reset():
     """Reset the quote"""
-    red = redis.StrictRedis(
-        host=REDIS_ENDPOINT, port=REDIS_PORT, db=0, decode_responses=True
-    )
     red.delete("quote")
     return jsonify({"quote": str(red.get("quote"))})
 
@@ -84,9 +78,6 @@ def version():
 def health():
     """Check the app health"""
     try:
-        red = redis.StrictRedis(
-            host=REDIS_ENDPOINT, port=REDIS_PORT, db=0, decode_responses=True
-        )
         red.ping()
     except redis.exceptions.ConnectionError:
         return jsonify({"ping": "FAIL"})
@@ -101,7 +92,7 @@ def ready():
 
 
 @APP.route("/mongo-test")
-def mongo_test():
+def mongo_test() -> dict:
     """Insert a document into MongoDB, retrieve it and clean up"""
     
     # Insert a test document
@@ -112,11 +103,11 @@ def mongo_test():
 
     #clean up
     test_collection.delete_one({"_id": result.inserted_id})
-    
-    return f'Success! Retrieved document: {retrieved_doc}'
+    return jsonify(retrieved_doc)
 
 
 if __name__ == "__main__":
     env = environ.get("FLASK_ENV")
+    port = environ.get("FLASK_PORT", "8080")
     host = environ.get("FLASK_HOST", "127.0.0.1")
-    APP.run(debug=env != "production", host=host)
+    APP.run(debug=env != "production", host=host, port=int(port))
