@@ -19,20 +19,29 @@ REDIS_PORT = int(environ.get("REDIS_PORT", "6379"))
 MONGO_URI = environ.get("MONGO_URI")
 MONGO_CERT_PATH = environ.get("MONGO_CERT_PATH", "X509-cert-8417019844152440938.pem")
 
-# Connect to MongoDB
-client = MongoClient(
-    MONGO_URI,
-    uuidRepresentation="standard",
-    tlsCertificateKeyFile=MONGO_CERT_PATH
-  )
-db = client['Springfield']
-test_collection = db['Simpson']
 
 APP = Flask(__name__)
 
 red = redis.StrictRedis(
     host=REDIS_ENDPOINT, port=REDIS_PORT, db=0, decode_responses=True
 )
+
+db = None
+test_collection = None
+
+
+def get_mongo_client():
+    global db, test_collection
+    if db is None:
+        client = MongoClient(
+            MONGO_URI,
+            uuidRepresentation="standard",
+            tlsCertificateKeyFile=MONGO_CERT_PATH
+        )
+        db = client['Springfield']
+        test_collection = db['Simpson']
+    return test_collection
+
 
 @APP.route("/")
 def redisapp():
@@ -95,6 +104,7 @@ def ready():
 def mongo_test() -> dict:
     """Insert a document into MongoDB, retrieve it and clean up"""
     
+    test_collection = get_mongo_client()
     # Insert a test document
     test_doc = {"name": "Homer Simpson", "quote": "D'oh!"}
     result = test_collection.insert_one(test_doc)
