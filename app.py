@@ -18,7 +18,7 @@ VERSION = "1.1.8-dev"
 REDIS_ENDPOINT = environ.get("REDIS_ENDPOINT", "localhost")
 REDIS_PORT = int(environ.get("REDIS_PORT", "6379"))
 MONGO_URI = environ.get("MONGO_URI")
-MONGO_CERT_PATH = environ.get("MONGO_CERT_PATH", "X509-cert-8417019844152440938.pem")
+MONGO_CERT = environ.get("MONGO_CERT", "X509-cert-8417019844152440938.pem")
 
 
 APP = Flask(__name__)
@@ -37,7 +37,7 @@ def get_mongo_client():
         client = MongoClient(
             MONGO_URI,
             uuidRepresentation="standard",
-            tlsCertificateKeyFile=MONGO_CERT_PATH,
+            tlsCertificateKeyFile=MONGO_CERT,
         )
         db = client["Springfield"]
         test_collection = db["Simpson"]
@@ -110,7 +110,10 @@ def mongo_test() -> dict:
     test_doc = {"name": "Homer Simpson", "quote": "D'oh!"}
     result = test_collection.insert_one(test_doc)
 
-    retrieved_doc = test_collection.find_one({"_id": result.inserted_id}, {"_id": 0})
+    retrieved_doc = test_collection.find_one(
+        {"_id": result.inserted_id},
+        {"_id": 0}
+    )
 
     # clean up
     test_collection.delete_one({"_id": result.inserted_id})
