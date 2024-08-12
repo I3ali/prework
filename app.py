@@ -1,5 +1,5 @@
 """
-    Example app that integrates with redis and save/get homer simpson quotes
+    Example app that integrates with Redis, MongoDB, and saves/gets Homer Simpson quotes.
 """
 
 from os import environ
@@ -8,6 +8,7 @@ import json
 import redis
 import requests
 from flask import Flask, redirect, jsonify
+from pymongo import MongoClient
 
 # Load environment variables from .env file
 load_dotenv()
@@ -15,6 +16,17 @@ load_dotenv()
 VERSION = "1.1.6"
 REDIS_ENDPOINT = environ.get("REDIS_ENDPOINT", "localhost")
 REDIS_PORT = int(environ.get("REDIS_PORT", "6379"))
+MONGO_URI = environ.get("MONGO_URI")
+MONGO_CERT_PATH = environ.get("MONGO_CERT_PATH")
+
+# Connect to MongoDB
+client = MongoClient(
+    MONGO_URI,
+    uuidRepresentation="standard",
+    tlsCertificateKeyFile=MONGO_CERT_PATH
+  )
+db = client['Springfield']
+test_collection = db['Simpson']
 
 APP = Flask(__name__)
 
@@ -39,6 +51,7 @@ def set_var():
     content = json.loads(request.text)
     quote = content[0]["quote"]
     red.set("quote", quote)
+    test_collection.insert_one({"quote": quote})
     return jsonify({"quote": str(red.get("quote"))})
 
 
@@ -85,6 +98,22 @@ def health():
 def ready():
     """Check the app readiness"""
     return health()
+
+
+@APP.route("/mongo-test")
+def mongo_test():
+    """Insert a document into MongoDB, retrieve it and clean up"""
+    
+    # Insert a test document
+    test_doc = {"name": "Homer Simpson", "quote": "D'oh!"}
+    result = test_collection.insert_one(test_doc)
+    
+    retrieved_doc = test_collection.find_one({"_id": result.inserted_id}, {"_id": 0})
+
+    #clean up
+    test_collection.delete_one({"_id": result.inserted_id})
+    
+    return f'Success! Retrieved document: {retrieved_doc}'
 
 
 if __name__ == "__main__":
