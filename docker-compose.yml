@@ -1,14 +1,63 @@
-version: '3'
 services:
   web:
+    image: prework-flask-app
     build: .
-    ports:
-      - "5001:5000" # Map container's port 5000 to host's port 5001
+    #ports:
+    #  - "8000:8000"
     depends_on:
       - redis
     env_file:
       - .env
+    secrets:
+      - mongo_cert.pem
+    deploy:
+      replicas: 3
+      update_config:
+        parallelism: 2
+        delay: 10s
+      restart_policy:
+        condition: on-failure
+    networks:
+      - webnet
+
   redis:
     image: "redis:alpine"
+    # ports:
+    #   - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - webnet
+
+  nginx:
+    image: nginx:alpine
     ports:
-      - "6379:6379"
+      - "80:80"
+    #  - published: 8000
+    #  - target: 80
+    #  - mode: global
+    #configs:
+    #  - nginx
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - web
+    networks:
+      - webnet
+
+volumes:
+  redis_data:
+    # external: true
+
+networks:
+  webnet:
+    # external: true
+
+# configs:
+#  nginx.conf:
+#    file: ./nginx.conf
+
+secrets:
+  mongo_cert.pem:
+    # external: true
+    file: X509-cert-8417019844152440938.pem
