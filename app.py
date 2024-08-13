@@ -14,7 +14,7 @@ from pymongo import MongoClient
 # Load environment variables from .env file
 load_dotenv()
 
-VERSION = "1.1.12-dev"
+VERSION = "1.2.12"
 REDIS_ENDPOINT = environ.get("REDIS_ENDPOINT", "localhost")
 REDIS_PORT = int(environ.get("REDIS_PORT", "6379"))
 MONGO_URI = environ.get("MONGO_URI")
